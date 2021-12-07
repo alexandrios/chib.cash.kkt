@@ -4,81 +4,70 @@ using System.Text;
 
 namespace shared
 {
+    // Тип чека (LIBFPTR_PARAM_RECEIPT_TYPE) может принимать следующие значения:
+    /*
+	LIBFPTR_RT_SELL - чек прихода (продажи)
+	LIBFPTR_RT_SELL_RETURN - чек возврата прихода (продажи)
+	LIBFPTR_RT_SELL_CORRECTION - чек коррекции прихода
+	LIBFPTR_RT_SELL_RETURN_CORRECTION - чек коррекции возврата прихода
+	LIBFPTR_RT_BUY - чек расхода (покупки)
+	LIBFPTR_RT_BUY_RETURN - чек возврата расхода (покупки)
+	LIBFPTR_RT_BUY_CORRECTION - чек коррекции расхода
+	LIBFPTR_RT_BUY_RETURN_CORRECTION - чек коррекции возврата расхода
+	*/
     public enum ChequeType
     {
-        SALE = 1, 
-        RETURN
+        SELL = 1, 
+        SELL_RETURN
     }
 
-    public enum PaymentType
+    // Тип оплаты
+    /*
+    LIBFPTR_PT_CASH = 0;
+    LIBFPTR_PT_ELECTRONICALLY = 1;
+    LIBFPTR_PT_PREPAID = 2;
+    LIBFPTR_PT_CREDIT = 3;
+    LIBFPTR_PT_OTHER = 4;
+    */
+    public enum PaymentType  // (Пока не используется)
     {
-        CASH = 1,
+        CASH = 0,
+        ELECTRONICALLY,
+        PREPAID,
         CREDIT,
-        TARE,
-        CARD
+        OTHER
     }
 
     interface ICash
     {
-        ChequeType GetChequeType();
-
-        long NewCheque(ChequeType type);
-
-        void Outcome(String sum);
-        void Income(String sum);
-
-        long RegisterSale(Dictionary<String, String> regParams);
-        /*
-                const std::string& text,
-				unsigned int sum,
-                unsigned int quantity = 1000,
-                unsigned int section = 0,
-                unsigned int tax = 0) = 0;
-                */
-        long Return(Dictionary<String, String> returnParams);
-        /*
-                const std::string& text,
-				unsigned int sum,
-                unsigned int quantity = 1000) = 0;
-                */
-        long CancelCheque();
-
-        long CloseCheque(uint income, PaymentType type = PaymentType.CASH);
-
-        long Print(String text);
-
-        long OpenSession();
+        long SetInputParams(Dictionary<String, String> inputParams);
 
         long IsSessionOpen();
         long IsSessionOver();
+        long OpenSession();
 
-        void XReport();
-        void ZReport();
+        long NewCheque(ChequeType type);
 
-        uint GetMaxCashStringLength();
+        long RegisterSale(Dictionary<String, String> regSaleParams);
 
-        void OpenTreasure();
+        long CloseCheque(String income);
+        long CancelCheque();
+
+        long Print(String text);
+
+        long Income(String sum);
+        long Outcome(String sum);
+
+        long XReport();
+        long ZReport();
 
         void End();
-
-        /*
-		 void SetFz54Params(int isCashlessCheck, int isECheck, int bankComiss,
-
-                const std::string&  clientPhone, const std::string&  clientEmail, 
-				const std::string&  service, const std::string&  cashier, 
-				const std::string&  agentPhone, const std::string&  operatorOper, 
-				const std::string& operatorName, const std::string& operatorAddress, 
-				const std::string& operatorInn, const std::string& operatorPhone) = 0;
-                */
-        void SetTaxTypeNumber(int taxTypeNumber);
-        void SetTypeOplNumber(int typeOplNumber);
-
-        void SetIsPreCheck(bool isPreCheck);
-
-        void SetCashierInn(String cashierInn);
         String GetInfoKKT();
 
-        void SetParamsMap(Dictionary<String, String> chequeParams);
-
+        uint GetMaxCashStringLength();
+        void SetTaxTypeNumber(int taxTypeNumber);
+        void SetTypeOplNumber(int typeOplNumber);
+        void SetIsPreCheck(bool isPreCheck);
+        void SetCashierInn(String cashierInn);
     }
 }

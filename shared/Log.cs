@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using System.IO;
 
 namespace shared
@@ -14,7 +12,7 @@ namespace shared
             Error,
         }
 
-        String logFilePath = "";
+        private readonly String logFilePath = "";
 
         public Log(String path)
         {
@@ -48,20 +46,24 @@ namespace shared
             using (StreamWriter sw = new StreamWriter(this.logFilePath, true, System.Text.Encoding.Default))
             {
                 DateTime now = DateTime.Now;
-                String servInfo = "[" + now.ToString("yyyy-MM-dd HH:mm:ss.fff") + "] [";
-                switch (level)
+                String servInfo = "[" + now.ToString("yyyy-MM-dd HH:mm:ss.fff") + "]";
+                if (!String.IsNullOrEmpty(message))
                 {
-                    case Level.Info:
-                        servInfo += "INFO";
-                        break;
-                    case Level.Warning:
-                        servInfo += "WARN";
-                        break;
-                    case Level.Error:
-                        servInfo += "ERROR";
-                        break;
+                    String nameLevel = "";
+                    switch (level)
+                    {
+                        case Level.Info:
+                            nameLevel = "INFO";
+                            break;
+                        case Level.Warning:
+                            nameLevel = "WARN";
+                            break;
+                        case Level.Error:
+                            nameLevel = "ERROR";
+                            break;
+                    }
+                    servInfo += " [" + nameLevel + "] ";
                 }
-                servInfo += "] ";
                 sw.WriteLine(servInfo + message);
             }
         }

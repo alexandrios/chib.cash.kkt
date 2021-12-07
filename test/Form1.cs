@@ -10,35 +10,43 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
+using shared;
 
 namespace Test
 {
     public partial class Form1 : Form
     {
-        //[DllImport("ccwrp.dll", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Unicode, EntryPoint = "Execute")]
-        //static extern void Execute();
+        Type wrapperType;
+        object wrapper;
 
         public Form1()
         {
             InitializeComponent();
         }
 
-        private void button1_Click(object sender, EventArgs e)
+
+        private void Form1_Load(object sender, EventArgs e)
         {
-            //Execute();
-
-            //var assemblyBytes = System.IO.File.ReadAllBytes("myassembly.dll");
-            //var assembly = System.Reflection.Assembly.Load(assemblyBytes);
-
             String wrapperPath = Directory.GetCurrentDirectory() + @"\chib.cash.wrp64.dll";
+            Assembly assembly = Assembly.LoadFile(wrapperPath);
+            foreach (var t in assembly.GetTypes())
+            {
+                Console.WriteLine(t.FullName);
+            }
+
+            wrapperType = assembly.GetType("chib.cash.wrp64.Wrapper", true, true);
+            
+            // Если статические методы у объекта, то можно не создавать instance
+            wrapper = Activator.CreateInstance(wrapperType);
+        }
+
+        private void Button1_Click(object sender, EventArgs e)
+        {
+            //String wrapperPath = Directory.GetCurrentDirectory() + @"\chib.cash.wrp64.dll";
 
             try
             {
-                Assembly assembly = Assembly.LoadFile(wrapperPath);
-                foreach (var t in assembly.GetTypes())
-                {
-                    Console.WriteLine(t.FullName);
-                }
+                //Assembly assembly = Assembly.LoadFile(wrapperPath);
 
                 /*
                 String chequeTemplate = @"SEPARATE=NOLOGENABLE=YESPRINTDOCLIST=&2
@@ -80,13 +88,35 @@ namespace Test
                     chequeTemplate = sr.ReadToEnd();
                 }
 
-                Type wrapperType = assembly.GetType("chib.cash.wrp64.Wrapper", true, true);
+                Dictionary<String, String> inputParams = new Dictionary<String, String>
+                {
+                    [Attributes.BANK_COMISS] = "0",
+                    [Attributes.IS_PRECHEQUE] = "0", // 1
+                    [Attributes.IS_CASHLESSCHEQUE] = "0",
+                    [Attributes.IS_ECHEQUE] = "0",
+                    [Attributes.CLIENT_PHONE] = "",
+                    [Attributes.CLIENT_EMAIL] = "no-reply@chelinvest.ru",
+                    [Attributes.SERVICE_NAME] = "",
+                    [Attributes.CASHIER_NAME] = "Красин Иван Аронович",
+                    [Attributes.CASHIER_INN] = "745003661891",
+                    [Attributes.AGENT_PHONE] = "",
+                    [Attributes.OPERATOR_OPER] = "",
+                    [Attributes.OPERATOR_NAME] = "",
+                    [Attributes.OPERATOR_ADDRESS] = "",
+                    [Attributes.OPERATOR_INN] = "",
+                    [Attributes.OPERATOR_PHONE] = "8-351-774359",
+                    [Attributes.PU_PHONE] = "83512234567",
+                    [Attributes.PU_NAME] = "АО Энерго",
+                    [Attributes.PU_INN] = "7450567890"
+                };
+
+                //Type wrapperType = assembly.GetType("chib.cash.wrp64.Wrapper", true, true);
 
                 // Если статические методы у объекта, то можно не создавать instance
-                object wrapper = Activator.CreateInstance(wrapperType);
+                //object wrapper = Activator.CreateInstance(wrapperType);
 
-                MethodInfo executeMethod = wrapperType.GetMethod("Start");
-                object[] parametersArray = new object[] { chequeTemplate };
+                MethodInfo executeMethod = wrapperType.GetMethod("PrintDocument");
+                object[] parametersArray = new object[] { chequeTemplate, inputParams };
 
                 // Если метод статический, то первый параметр (объект) игнорируется
                 //executeMethod.Invoke(null, parametersArray);
@@ -96,9 +126,92 @@ namespace Test
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message + "\n" + wrapperPath);
+                MessageBox.Show(ex.Message);
             }
 
+        }
+
+        private void _XReportButton_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                MethodInfo executeMethod = wrapperType.GetMethod("X_Report");
+                executeMethod.Invoke(wrapper, null);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
+
+        private void _ZReportButton_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                MethodInfo executeMethod = wrapperType.GetMethod("Z_Report");
+                executeMethod.Invoke(wrapper, null);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
+
+        private void Button2_Click(object sender, EventArgs e)
+        {
+            TestToDouble("0.34");
+            TestToDouble("1.05");
+            TestToDouble("1.79");
+            TestToDouble("1.01");
+            TestToDouble("12.49");
+            TestToDouble("15.51");
+            TestToDouble("12.99");
+            TestToDouble("123451.08");
+            TestToDouble("15200234.99");
+            TestToDouble("-15.99");
+            TestToDouble("-2");
+            TestToDouble("99");
+            TestToDouble("-0");
+            TestToDouble("-15.99999");
+            TestToDouble("2.123456789");
+            TestToDouble("99.9999999");
+            TestToDouble("-99.9999999");
+            TestToDouble("99.99");
+            TestToDouble("-99.99");
+
+        }
+
+        private void TestToDouble(String value)
+        {
+            Console.WriteLine(Utils.ToDoubleSumma(value).ToString());
+        }
+
+        private void _incomeButton_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                MethodInfo executeMethod = wrapperType.GetMethod("MoneyIn");
+                object[] parametersArray = new object[] { "17.98" };
+                executeMethod.Invoke(wrapper, parametersArray);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
+
+        private void _outcomeButton_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                MethodInfo executeMethod = wrapperType.GetMethod("MoneyOut");
+                object[] parametersArray = new object[] { "4.79" };
+                executeMethod.Invoke(wrapper, parametersArray);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
         }
     }
 }
