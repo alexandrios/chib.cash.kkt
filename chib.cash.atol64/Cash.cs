@@ -60,6 +60,24 @@ namespace chib.cash.atol64
             End();
         }
 
+        private List<String> SplitLinesByMaxSize(List<String> textLines)
+        {
+            List<String> result = new List<string>();
+            String t = "";
+
+            foreach (String line in textLines)
+            {
+                t = line;
+                while (t.Length > config.MaxCashStringLength)
+                {
+                    result.Add(t.Substring(0, config.MaxCashStringLength));
+                    t = t.Substring(config.MaxCashStringLength);
+                }
+                result.Add(t);
+            }
+
+            return result;
+        }
 
         private void Open()
         {
@@ -346,8 +364,14 @@ namespace chib.cash.atol64
 
         public long MultiPrint(List<String> textLines)
         {
+            // Разбить строки по максимальной ширине строки (config.MaxCashStringLength)
+            log.WriteToLog("MultiPrint: получено строк: " + textLines.Count.ToString());
+            List<String> splittedLines = SplitLinesByMaxSize(textLines);
+            log.WriteToLog("Ширина строки(config.MaxCashStringLength): " + config.MaxCashStringLength.ToString() + 
+                "; Итого строк: " + splittedLines.Count.ToString());
+
             long cnt = 0;
-            foreach (String line in textLines)
+            foreach (String line in splittedLines)
             {
                 kkt.Print(line);
                 cnt++;
