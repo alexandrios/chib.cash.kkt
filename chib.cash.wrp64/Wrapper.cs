@@ -1,7 +1,6 @@
 ﻿using IniParser;
 using System;
 using shared;
-using System.IO;
 using System.Reflection;
 using System.Collections.Generic;
 
@@ -11,7 +10,7 @@ namespace chib.cash.wrp64
     {
         Log log;
         String cashDriver;
-        const String INI_FILE = "chib.cash.wrp64.ini";
+        //const String INI_FILE = "chib.cash.wrp64.ini";
 
         List<String> textLines = new List<String>();
         String srvText;
@@ -131,13 +130,14 @@ namespace chib.cash.wrp64
         private void ReadIniFile()
         {
             FileIniDataParser parser = new FileIniDataParser();
-            IniParser.Model.IniData configuration = parser.ReadFile(INI_FILE);
+            String iniFile = Assembly.GetExecutingAssembly().GetName().Name + ".ini";
+            IniParser.Model.IniData configuration = parser.ReadFile(iniFile /*INI_FILE*/);
 
             String logPath = configuration.GetKey("LogPath");
             log = new Log(logPath);
             log.WriteToLog("");
             log.WriteToLog("");
-            log.WriteToLog("### Чтение параметров из " + INI_FILE + " ###");
+            log.WriteToLog("### Чтение параметров из " + iniFile /*INI_FILE*/ + " ###");
             log.WriteToLog("LogPath=" + logPath);
 
             this.cashDriver = configuration.GetKey("CashDriver");

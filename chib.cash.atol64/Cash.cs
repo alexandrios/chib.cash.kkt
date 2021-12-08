@@ -35,7 +35,8 @@ namespace chib.cash.atol64
 
         protected Cash()
         {
-            config = new Config("chib.cash.atol64.ini");
+            String iniFile = System.Reflection.Assembly.GetExecutingAssembly().GetName().Name + ".ini";
+            config = new Config(iniFile /*"chib.cash.atol64.ini"*/);
             log = config.GetLog();
             log.WriteToLog("Cash()");
 
@@ -71,7 +72,7 @@ namespace chib.cash.atol64
                 while (t.Length > config.MaxCashStringLength)
                 {
                     result.Add(t.Substring(0, config.MaxCashStringLength));
-                    t = t.Substring(config.MaxCashStringLength);
+                    t = t.Substring(config.MaxCashStringLength).TrimStart();
                 }
                 result.Add(t);
             }

@@ -11,10 +11,10 @@ namespace chib.cash.wrp64
         readonly Object cash;
         readonly Type cashType;
 
-        public CashObject(String driverName)
+        public CashObject(String driverNameExt)
         {
-            this.driverName = driverName;
-            this.driverPath = Directory.GetCurrentDirectory() + @"\" + driverName + ".dll";
+            this.driverName = Path.GetFileNameWithoutExtension(driverNameExt);
+            this.driverPath = Directory.GetCurrentDirectory() + @"\" + driverNameExt;
 
             // Получить объект Cash драйвера driverName
             Assembly assembly = Assembly.LoadFile(this.driverPath);

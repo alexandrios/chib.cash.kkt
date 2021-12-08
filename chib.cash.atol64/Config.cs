@@ -11,7 +11,7 @@ namespace chib.cash.atol64
         readonly String iniFile;
         IniParser.Model.IniData config;
 
-        public String UseLog { get; private set; }
+        //public String UseLog { get; private set; }
 
         public String RegInfoLog { get; private set; }
 
@@ -42,7 +42,7 @@ namespace chib.cash.atol64
         {
             this.iniFile = iniFile;
             FileIniDataParser parser = new FileIniDataParser();
-            config = parser.ReadFile(iniFile); // "chib.cash.atol64.ini"
+            config = parser.ReadFile(iniFile);
             ReadIniFile();
         }
 
@@ -101,7 +101,7 @@ namespace chib.cash.atol64
             log.WriteToLog("### Чтение параметров из " + this.iniFile + " ###");
             log.WriteToLog("LogPath=" + logPath);
 
-            UseLog = GetIniParamString("UseLog", "D");
+            //UseLog = GetIniParamString("UseLog", "Y");
             RegInfoLog = GetIniParamString("RegInfoLog", "D");
             PortName = GetIniParamString("PortName", "COM1");
             IpAddress = GetIniParamString("IPAddress", "");
