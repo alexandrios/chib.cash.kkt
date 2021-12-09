@@ -69,7 +69,6 @@
   <ItemGroup>
     <Compile Include="Cash.cs" />
     <Compile Include="Config.cs" />
-    <Compile Include="InputParams.cs" />
     <Compile Include="KKT.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
