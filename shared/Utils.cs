@@ -20,5 +20,26 @@
 
             return summa;
         }
+
+        /*
+        public static decimal ToDecimalSumma(string value)
+        {
+            decimal summa = 0;
+            if (decimal.TryParse(value, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.GetCultureInfo("en-US"), out decimal val))
+            {
+                int v = (int)((val * 100) + (val < 0 ? -0.5 : 0.5));
+                summa = v;
+                summa = summa / 100;
+            }
+
+            return summa;
+        }
+        CURRENCY to_currency(unsigned int sum)
+        {
+            CURRENCY c;
+            c.int64 = sum * 100;
+            return c;
+        }
+        */
     }
 }

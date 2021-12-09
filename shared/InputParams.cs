@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using shared;
 
-namespace chib.cash.atol64
+namespace shared
 {
     class InputParams
     {

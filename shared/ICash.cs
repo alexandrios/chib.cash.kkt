@@ -6,6 +6,7 @@ namespace shared
 {
     // Тип чека (LIBFPTR_PARAM_RECEIPT_TYPE) может принимать следующие значения:
     /*
+     * Atol:
 	LIBFPTR_RT_SELL - чек прихода (продажи)
 	LIBFPTR_RT_SELL_RETURN - чек возврата прихода (продажи)
 	LIBFPTR_RT_SELL_CORRECTION - чек коррекции прихода
@@ -20,6 +21,8 @@ namespace shared
         SELL = 1, 
         SELL_RETURN
     }
+    // * Штрих-М: 0 - SELL, 2 - SELL_RETURN
+
 
     // Тип оплаты
     /*
