@@ -12,6 +12,8 @@ namespace chib.cash.shtrih64
         Log log;
         InputParams ip;
 
+        double chequeSumma = 0.0;
+
         private static Cash instance;
 
         protected Cash()
@@ -37,8 +39,8 @@ namespace chib.cash.shtrih64
         ~Cash()
         {
             log.WriteToLog("~Cash()");
-            kkt.Close();
-            kkt.Deinitialize();
+            //kkt.Close();
+            //kkt.Deinitialize();
             End();
         }
 
@@ -429,12 +431,6 @@ namespace chib.cash.shtrih64
                     case Attributes.TEMPL_TAX:
                         {
                             // Код НДС
-                            // 1 LIBFPTR_TAX_VAT18  - НДС 18% (НДС 20%)
-                            // 2 LIBFPTR_TAX_VAT10  - НДС 10%
-                            // 3 LIBFPTR_TAX_VAT118 - НДС расчитанный 18/118 (НДС расчитанный 20/120)
-                            // 4 LIBFPTR_TAX_VAT110 - НДС расчитанный 10/110
-                            // 5 LIBFPTR_TAX_VAT0   - НДС 0%
-                            // 6 LIBFPTR_TAX_NO     - НЕ ОБЛАГАЕТСЯ
                             String taxTakenFrom = "";
                             uint taxTypeNumber_ = 0;
                             String value = pair.Value;
@@ -442,12 +438,12 @@ namespace chib.cash.shtrih64
                             {
                                 if (val >= 1102 && val <= 1107)
                                 {
-                                    if (val == 1102) taxTypeNumber_ = 7;      // 20%
+                                    if (val == 1102) taxTypeNumber_ = 1;      // 20%
                                     else if (val == 1103) taxTypeNumber_ = 2; // 10%
-                                    else if (val == 1106) taxTypeNumber_ = 8; // 20/120
-                                    else if (val == 1107) taxTypeNumber_ = 4; // 10/110
-                                    else if (val == 1104) taxTypeNumber_ = 5; // 0%
-                                    else if (val == 1105) taxTypeNumber_ = 6; // НЕ ОБЛАГАЕТСЯ
+                                    else if (val == 1106) taxTypeNumber_ = 5; // 20/120
+                                    else if (val == 1107) taxTypeNumber_ = 6; // 10/110
+                                    else if (val == 1104) taxTypeNumber_ = 3; // 0%
+                                    else if (val == 1105) taxTypeNumber_ = 4; // НЕ ОБЛАГАЕТСЯ
                                     taxTakenFrom = " [Налог взят из позиции (предмета расчета)]";
                                 }
                             }
@@ -472,36 +468,56 @@ namespace chib.cash.shtrih64
                 }
             }
 
+            chequeSumma += sum;
+            result = kkt.Registration(srvText, (int)section, quantity, (decimal)sum, (int)tax, 4, 4);
+
+            // Установка значения тегов
+            // Признак агента (1222 и 1057)
+            int tag1222 = config.Tag1057;
+            if (tag1222 > 0)
+            {
+                log.WriteToLog("Признак агента [1222] взят из ini-файла: " + tag1222.ToString());
+            }
+            else
+            {
+                tag1222 = kkt.Get1057();
+                log.WriteToLog("Признак агента [1222] взят из регистрационных данных: " + tag1222.ToString());
+            }
+            log.WriteToLog("Установка значения параметра: Признак агента [tag1222]");
+            kkt.FNSendTagOperationInt(1222, 0, tag1222);
+
             // Запись тегов
             log.WriteToLog("Tag 1223 ->");
+            kkt.FNBeginSTLVTag(1223);
+
             if (!String.IsNullOrEmpty(ip.OperatorName))
             {
                 log.WriteToLog("Установка значения параметра: Наименование оператора перевода [1026]");
-                kkt.SetParam(1026, ip.OperatorName);
+                kkt.FNAddTag(1026, KKT.TAGTYPE_STRING, ip.OperatorName);
             }
 
             if (!String.IsNullOrEmpty(ip.OperatorInn))
             {
                 log.WriteToLog("Установка значения параметра: ИНН оператора перевода [1016]");
-                kkt.SetParam(1016, ip.OperatorInn);
+                kkt.FNAddTag(1016, KKT.TAGTYPE_STRING, ip.OperatorInn);
             }
 
             if (!String.IsNullOrEmpty(ip.OperatorAddress))
             {
                 log.WriteToLog("Установка значения параметра: Адрес оператора перевода [1005]");
-                kkt.SetParam(1005, ip.OperatorAddress);
+                kkt.FNAddTag(1005, KKT.TAGTYPE_STRING, ip.OperatorAddress);
             }
 
             if (!String.IsNullOrEmpty(ip.OperatorPhone))
             {
                 log.WriteToLog("Установка значения параметра: Телефон оператора перевода [1075]");
-                kkt.SetParam(1075, ip.OperatorPhone);
+                kkt.FNAddTag(1075, KKT.TAGTYPE_STRING, ip.OperatorPhone);
             }
 
             if (!String.IsNullOrEmpty(ip.AgentPhone))
             {
                 log.WriteToLog("Установка значения параметра: Телефон платежного агента [1073]");
-                kkt.SetParam(1073, ip.AgentPhone);
+                kkt.FNAddTag(1073, KKT.TAGTYPE_STRING, ip.AgentPhone);
             }
 
             /*
@@ -509,77 +525,37 @@ namespace chib.cash.shtrih64
             if (!String.IsNullOrEmpty(ip.PayAgentPhone))
             {
                 log.WriteToLog("Установка значения параметра: Телефон платежного агента [1074]");
-                kkt.SetParam(1074, ip.PayAgentPhone);
+                kkt.FNAddTag(1074, KKT.TAGTYPE_STRING, ip.PayAgentPhone);
             }
             */
 
             if (!String.IsNullOrEmpty(ip.OperatorOper))
             {
                 log.WriteToLog("Установка значения параметра: Операция платежного агента [1044]");
-                kkt.SetParam(1044, ip.OperatorOper);
+                kkt.FNAddTag(1044, KKT.TAGTYPE_STRING, ip.OperatorOper);
             }
 
-            kkt.UtilFormTlv();
-            byte[] agentInfo = kkt.GetParamByteArray(Constants.LIBFPTR_PARAM_TAG_VALUE);
+            kkt.FNSendSTLVTagOperation();
             log.WriteToLog("<- Tag 1223");
 
 
             log.WriteToLog("Tag 1224 ->");
+            kkt.FNBeginSTLVTag(1224);
+
             if (!String.IsNullOrEmpty(ip.PuPhone))
             {
                 log.WriteToLog("Установка значения параметра: Телефон поставщика [1171]");
-                kkt.SetParam(1171, ip.PuPhone);  // max 19 symbols
+                kkt.FNAddTag(1171, KKT.TAGTYPE_STRING, ip.PuPhone);  // max 19 symbols
             }
 
             if (!String.IsNullOrEmpty(ip.PuName))
             {
                 log.WriteToLog("Установка значения параметра: Наименование поставщика [1225]");
-                kkt.SetParam(1225, ip.PuName); 
+                kkt.FNAddTag(1225, KKT.TAGTYPE_STRING, ip.PuName);
             }
 
-            kkt.UtilFormTlv();
-            byte[] suplierInfo = kkt.GetParamByteArray(Constants.LIBFPTR_PARAM_TAG_VALUE);
+            kkt.FNSendSTLVTagOperation();
             log.WriteToLog("<- Tag 1224");
-
-
-            kkt.SetParam(Constants.LIBFPTR_PARAM_COMMODITY_NAME, srvText);
-            kkt.SetParam(Constants.LIBFPTR_PARAM_PRICE, sum);
-            kkt.SetParam(Constants.LIBFPTR_PARAM_QUANTITY, quantity);
-            kkt.SetParam(Constants.LIBFPTR_PARAM_TAX_TYPE, tax);
-
-            kkt.SetParam(1212, 4); // Признак предмета расчета. 1-ТОВАР; 4-УСЛУГА (Таблица 29)
-            kkt.SetParam(1214, 4); // Признак способа расчета. 4-ПОЛНЫЙ РАСЧЕТ (Таблица 28)
-
-
-            // Признак агента (1222 и 1057)
-            int tag1222 = config.Tag1057;
-            if (tag1222 > 0)
-            {
-                log.WriteToLog("Признак агента [1222] взят из ini-файла: " + tag1222.ToString());
-                // Внимание: если признак агента из ини-файла будет отличаться от того, который в регистрации, то возникнет ошибка: 
-                // Объекту 0x009489B0 присвоен код ошибки 148 [Ошибка программирования реквизита 1057 (Недопустимое сочетание реквизитов)]
-            }
-            else
-            {
-                tag1222 = kkt.Get1057();
-                log.WriteToLog("Признак агента [1222] взят из регистрационных данных: " + tag1222.ToString());
-            }
-            log.WriteToLog("Установка значения параметра: Признак агента [1222]");
-            kkt.SetParam(1222, tag1222);
-
-            log.WriteToLog("Установка значения параметра: Данные агента [1223]");
-            kkt.SetParam(1223, agentInfo);
-
-            if (!String.IsNullOrEmpty(ip.PuInn))
-            {
-                log.WriteToLog("Установка значения параметра: ИНН поставщика [1226]");
-                kkt.SetParam(1226, ip.PuInn);
-            }
-
-            log.WriteToLog("Установка значения параметра: Данные поставщика [1224]");
-            kkt.SetParam(1224, suplierInfo);
-
-            result = kkt.Registration();
 
             return result;
         }
@@ -591,74 +567,156 @@ namespace chib.cash.shtrih64
             if (ip.IsPreCheque)
             {
                 log.WriteToLog("CloseCheque: пречек");
+
+                // Частичная отрезка ленты
+                int linesBeforeCut = config.LinesBeforeCut;
+                log.WriteToLog("Пропустить строк перед отрезкой: " + linesBeforeCut.ToString());
+                if (linesBeforeCut >= 0)
+                {
+                    for (int i = 0; i < linesBeforeCut; i++)
+                        kkt.Print("");
+
+                    kkt.Cut(true);  // true - неполная, false - полная отрезка
+                }
+
+                //shtrih_->FinishDocument();
                 result = kkt.EndNonFiscalDoc();
                 return result;
             }
+
+          
+            // Регистрация кассира
+            kkt.CashierRegistration(ip.CashierName, ip.CashierInn);
+
+/*
+// Установка значения тегов
+int tag1057 = config.Tag1057;
+if (tag1057 > 0)
+{
+    log.WriteToLog("Признак агента [1057] взят из ini-файла: " + tag1057.ToString());
+}
+else
+{
+    tag1057 = kkt.Get1057();
+    log.WriteToLog("Признак агента [1057] взят из регистрационных данных: " + tag1057.ToString());
+}
+log.WriteToLog("Установка значения параметра: Признак агента [1057]");
+            kkt.FNSendTagOperationInt(1057, 0, tag1057);
+            
+    if (!String.IsNullOrEmpty(ip.OperatorName))
+    {
+        log.WriteToLog("Установка значения параметра: Наименование оператора перевода [1026]");
+        kkt.SetParam(1026, ip.OperatorName);
+    }
+
+    if (!String.IsNullOrEmpty(ip.OperatorInn))
+    {
+        log.WriteToLog("Установка значения параметра: ИНН оператора перевода [1016]");
+        kkt.SetParam(1016, ip.OperatorInn);
+    }
+
+    if (!String.IsNullOrEmpty(ip.OperatorAddress))
+    {
+        log.WriteToLog("Установка значения параметра: Адрес оператора перевода [1005]");
+        kkt.SetParam(1005, ip.OperatorAddress);
+    }
+
+    if (!String.IsNullOrEmpty(ip.OperatorPhone))
+    {
+        log.WriteToLog("Установка значения параметра: Телефон оператора перевода [1075]");
+        kkt.SetParam(1075, ip.OperatorPhone);
+    }
+
+    if (!String.IsNullOrEmpty(ip.AgentPhone))
+    {
+        log.WriteToLog("Установка значения параметра: Телефон платежного агента [1073]");
+        kkt.SetParam(1073, ip.AgentPhone);
+    }
+
+    // 1074 -  у нас нет оператора по приёму платежей (а значит и его телефона) [05.10.2021]
+    //if (!String.IsNullOrEmpty(ip.PayAgentPhone))
+    //{
+    //    log.WriteToLog("Установка значения параметра: Телефон платежного агента [1074]");
+    //    kkt.SetParam(1074, ip.PayAgentPhone);
+    //}
+
+    if (!String.IsNullOrEmpty(ip.OperatorOper))
+    {
+        log.WriteToLog("Установка значения параметра: Операция платежного агента [1044]");
+        kkt.SetParam(1044, ip.OperatorOper);
+    }
+
+    if (!String.IsNullOrEmpty(ip.PuPhone))
+    {
+        log.WriteToLog("Установка значения параметра: Телефон поставщика [1171]");
+        kkt.SetParam(1171, ip.PuPhone);  // max 19 symbols
+    }
+*/
 
             //uint v = (uint)((income * 100) + 0.5);
             //double sum = v;
             //sum = sum / 100;
             double sum = Utils.ToDoubleSumma(income);
 
-            long typeOpl = Constants.LIBFPTR_PT_CASH; // 0 - наличные
-            String typeTakenFrom = "";
+            int typeOpl = 0; // 0 - наличные
             int chequeState = kkt.GetChequeState();
 
-            //try
-            //{ 
-
             // Регистрация оплаты
-            if (chequeState == 0 /* SELL */ && !ip.IsCashlessCheque)
+            if (chequeState == 0 /* SELL */) // открыт чек продажи
             {
-                // Открыт чек продажи за наличные
-                // Со сдачей
-                // Возможно только при наличной оплате. При безналичной - идем в другую ветку, при чеке возврата - тоже
-                kkt.SetParam(Constants.LIBFPTR_PARAM_PAYMENT_TYPE, Constants.LIBFPTR_PT_CASH);
-                kkt.SetParam(Constants.LIBFPTR_PARAM_PAYMENT_SUM, sum);
-                result = kkt.Payment();
+                log.WriteToLog("CloseCheque: chequeSumma=" + chequeSumma.ToString());
+                log.WriteToLog("CloseCheque: sum[before]=" + sum.ToString());
+
+                // Если тип оплаты не наличные и была введена сумма оплаты, превышающая сумму чека
+                // (если сумма оплаты меньше суммы чека - будет стандартная ошибка драйвера:
+                //  77 - Вносимая безналичной оплатой сумма больше суммы чека)
+                if (ip.IsCashlessCheque && sum > chequeSumma)
+                {
+                    // скорректировать сумму: сделать ее равной сумме чека
+                    sum = chequeSumma;
+                }
+
+                log.WriteToLog("CloseCheque: sum[after]=" + sum.ToString());
                 log.WriteToLog("CloseCheque: [Тип оплаты по-умолчанию: НАЛ] Сумма полученная=" + sum.ToString() +
                     " => " + result.ToString());
             }
-            else
+
+            try
             {
-                // Без сдачи - безнал или чек возврата
-                // Если безнал, то закрываем безналичный чек определенным типом оплаты
+                // Если БЕЗНАЛ, а тип платежа PayType не установлен (а по умолчанию он  = 1 (НАЛ)), 
+                // то установить тип платежа = 2 (см Таблицу 5). 
+                // А вообще для платежей по безналу надо прописыать в chib.cash.strih.ini нужный PayType
                 if (ip.IsCashlessCheque)
                 {
-                    // Если бы тип оплаты передавали из АРМ:
-                    //if (ip.TypeOpl > 0)
-                    //{
-                    //    typeOpl = ip.TypeOpl;
-                    //    typeTakenFrom = "[Тип оплаты взят из внешнего параметра (АРМ)]";
-                    //}
-                    //else
-                    //{
                     typeOpl = config.CashlessTypeClose;
-                    typeTakenFrom = "[Тип оплаты взят из ini-файла]";
-                    //}
+                    if (typeOpl == 1) // Ошибочно стоит НАЛ -> взять 2-ю строку в таблице
+                        typeOpl = 2;
+                }
+                else
+                {
+                    typeOpl = 1; // НАЛ
                 }
 
-                kkt.SetParam(Constants.LIBFPTR_PARAM_PAYMENT_TYPE, typeOpl);
-                kkt.SetParam(Constants.LIBFPTR_PARAM_PAYMENT_SUM, sum);
-                result = kkt.Payment();
-                log.WriteToLog("CloseCheque: " + typeTakenFrom + "=" + typeOpl.ToString() + " Сумма полученная=" + sum.ToString() +
-                    " => " + result.ToString());
+                if (kkt.GetShiftState() != (uint)8)
+                {
+                    // Если не "8 Открытый документ"
+                    kkt.CancelCheque();
+                    return 0;
+                }
+
+                // Закрытие чека
+                result = kkt.CloseCheque(sum, ip.IsCashlessCheque ? typeOpl : 1);
+
+            }
+            catch (Exception ex)
+            {
+              kkt.CancelCheque();
+              log.WriteToLog("Чек был отменен: " + ex.Message);
             }
 
-            //}
-            //catch (Exception ex)
-            //{
-            //  kkt.CancelCheque();
-            //  log.WriteToLog("Чек был отменен: " + ex.Message);
-            //}
-
-
-            // Закрытие чека
-            result = kkt.CloseCheque();
-
             // Получение информации о номере чека из ФН
-            uint documentNumber = kkt.GetLastDocumentNumber();
-            log.WriteToLog(">>> ФД № = " + documentNumber.ToString());
+            //uint documentNumber = kkt.GetLastDocumentNumber();
+            //log.WriteToLog(">>> ФД № = " + documentNumber.ToString());
 
             return result;
         }
@@ -713,6 +771,7 @@ namespace chib.cash.shtrih64
             this.Open();
             try
             {
+                /*
                 // Сумма выручки
                 double revenue = kkt.GetRevenue();
                 log.WriteToLog("Сумма выручки: " + revenue.ToString());
@@ -724,7 +783,7 @@ namespace chib.cash.shtrih64
                 // Сумма выплат
                 double sumCashOut = kkt.GetCashOut();
                 log.WriteToLog("Сумма выплат: " + sumCashOut.ToString());
-
+                */
                 result = kkt.Income(Utils.ToDoubleSumma(sum));
             }
             finally
@@ -747,6 +806,7 @@ namespace chib.cash.shtrih64
             this.Open();
             try
             {
+                /*
                 // Сумма выручки
                 double revenue = kkt.GetRevenue();
                 log.WriteToLog("Сумма выручки: " + revenue.ToString());
@@ -758,9 +818,10 @@ namespace chib.cash.shtrih64
                 // Сумма выплат
                 double sumCashOut = kkt.GetCashOut();
                 log.WriteToLog("Сумма выплат: " + sumCashOut.ToString());
-
+                */
                 result = kkt.Outcome(Utils.ToDoubleSumma(sum));
 
+                /*
                 if (result == -1)
                 {
                     if (revenue + sumCashIn - sumCashOut <= sumCashOut)
@@ -769,6 +830,7 @@ namespace chib.cash.shtrih64
                         MessageBox.Show("Указанной суммы нет в кассе!", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     }
                 }
+                */
             }
             finally
             {

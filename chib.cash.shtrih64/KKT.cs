@@ -6,14 +6,14 @@ namespace chib.cash.shtrih64
 {
     public class KKT
     {
-        const int TAGTYPE_BYTE = 0;
-        const int TAGTYPE_UINT16 = 1;
-        const int TAGTYPE_UINT32 = 2;
-        const int TAGTYPE_VLN = 3;
-        const int TAGTYPE_FVLN = 4;
-        const int TAGTYPE_BITMASK = 5;
-        const int TAGTYPE_UNIXTIME = 6;
-        const int TAGTYPE_STRING = 7;
+        public const int TAGTYPE_BYTE = 0;
+        public const int TAGTYPE_UINT16 = 1;
+        public const int TAGTYPE_UINT32 = 2;
+        public const int TAGTYPE_VLN = 3;
+        public const int TAGTYPE_FVLN = 4;
+        public const int TAGTYPE_BITMASK = 5;
+        public const int TAGTYPE_UNIXTIME = 6;
+        public const int TAGTYPE_STRING = 7;
 
         Log log;
         DrvFR fptr;
@@ -27,7 +27,16 @@ namespace chib.cash.shtrih64
 
         public void Initialize()
         {
-            fptr = new DrvFR();
+            log.WriteToLog("fptr -> new DrvFR()");
+            try
+            {
+                fptr = new DrvFR();
+                log.WriteToLog("fptr = new DrvFR()");
+            }
+            catch (Exception ex)
+            {
+                log.WriteToLog(Log.Level.Error, ex.StackTrace + " " + ex.Message);
+            }
         }
 
         public void Deinitialize()
@@ -54,6 +63,7 @@ namespace chib.cash.shtrih64
 
         public bool Open(int adminPassword, int userPassword, int connectionType, String portName, String ipAddress, String tcpPort)
         {
+            this.adminPassword = adminPassword;
             this.userPassword = userPassword;
             bool isOpened = false;
             try
@@ -124,85 +134,37 @@ namespace chib.cash.shtrih64
         public void RequestInfoKKT()
         {
             log.WriteToLog("Запрос общей информации и статуса ККТ:");
-            /*
-            fptr.setParam(Constants.LIBFPTR_PARAM_DATA_TYPE, Constants.LIBFPTR_DT_STATUS);
-            fptr.queryData();
 
-            uint operatorID = fptr.getParamInt(Constants.LIBFPTR_PARAM_OPERATOR_ID);
-            uint logicalNumber = fptr.getParamInt(Constants.LIBFPTR_PARAM_LOGICAL_NUMBER);
-            uint shiftState = fptr.getParamInt(Constants.LIBFPTR_PARAM_SHIFT_STATE);
-            uint model = fptr.getParamInt(Constants.LIBFPTR_PARAM_MODEL);
-            uint mode = fptr.getParamInt(Constants.LIBFPTR_PARAM_MODE);
-            uint submode = fptr.getParamInt(Constants.LIBFPTR_PARAM_SUBMODE);
-            uint receiptNumber = fptr.getParamInt(Constants.LIBFPTR_PARAM_RECEIPT_NUMBER);
-            uint documentNumber = fptr.getParamInt(Constants.LIBFPTR_PARAM_DOCUMENT_NUMBER);
-            uint shiftNumber = fptr.getParamInt(Constants.LIBFPTR_PARAM_SHIFT_NUMBER);
-            uint receiptType = fptr.getParamInt(Constants.LIBFPTR_PARAM_RECEIPT_TYPE);
-            uint lineLength = fptr.getParamInt(Constants.LIBFPTR_PARAM_RECEIPT_LINE_LENGTH);
-            uint lineLengthPix = fptr.getParamInt(Constants.LIBFPTR_PARAM_RECEIPT_LINE_LENGTH_PIX);
+            fptr.Password = this.adminPassword;
 
-            double receiptSum = fptr.getParamDouble(Constants.LIBFPTR_PARAM_RECEIPT_SUM);
+            fptr.TableNumber = 18;
+            fptr.FieldNumber = 2;
+            fptr.RowNumber = 1;
+            fptr.GetFieldStruct();
+            fptr.ReadTable();
+            log.WriteToLog("UserINN = " + fptr.ValueOfFieldString);
 
-            bool isFiscalDevice = fptr.getParamBool(Constants.LIBFPTR_PARAM_FISCAL);
-            bool isFiscalFN = fptr.getParamBool(Constants.LIBFPTR_PARAM_FN_FISCAL);
-            bool isFNPresent = fptr.getParamBool(Constants.LIBFPTR_PARAM_FN_PRESENT);
-            bool isInvalidFN = fptr.getParamBool(Constants.LIBFPTR_PARAM_INVALID_FN);
-            bool isCashDrawerOpened = fptr.getParamBool(Constants.LIBFPTR_PARAM_CASHDRAWER_OPENED);
-            bool isPaperPresent = fptr.getParamBool(Constants.LIBFPTR_PARAM_RECEIPT_PAPER_PRESENT);
-            bool isPaperNearEnd = fptr.getParamBool(Constants.LIBFPTR_PARAM_PAPER_NEAR_END);
-            bool isCoverOpened = fptr.getParamBool(Constants.LIBFPTR_PARAM_COVER_OPENED);
-            bool isPrinterConnectionLost = fptr.getParamBool(Constants.LIBFPTR_PARAM_PRINTER_CONNECTION_LOST);
-            bool isPrinterError = fptr.getParamBool(Constants.LIBFPTR_PARAM_PRINTER_ERROR);
-            bool isCutError = fptr.getParamBool(Constants.LIBFPTR_PARAM_CUT_ERROR);
-            bool isPrinterOverheat = fptr.getParamBool(Constants.LIBFPTR_PARAM_PRINTER_OVERHEAT);
-            bool isDeviceBlocked = fptr.getParamBool(Constants.LIBFPTR_PARAM_BLOCKED);
+            fptr.TableNumber = 18;
+            fptr.FieldNumber = 7;
+            fptr.RowNumber = 1;
+            fptr.GetFieldStruct();
+            fptr.ReadTable();
+            log.WriteToLog("User = " + fptr.ValueOfFieldString);
 
-            DateTime dateTime = fptr.getParamDateTime(Constants.LIBFPTR_PARAM_DATE_TIME);
+            fptr.TableNumber = 18;
+            fptr.FieldNumber = 9;
+            fptr.RowNumber = 1;
+            fptr.GetFieldStruct();
+            fptr.ReadTable();
+            log.WriteToLog("Address = " + fptr.ValueOfFieldString);
 
-            String serialNumber = fptr.getParamString(Constants.LIBFPTR_PARAM_SERIAL_NUMBER);
-            String modelName = fptr.getParamString(Constants.LIBFPTR_PARAM_MODEL_NAME);
-            String firmwareVersion = fptr.getParamString(Constants.LIBFPTR_PARAM_UNIT_VERSION);
-
-            log.WriteToLog("operatorID=" + operatorID.ToString());
-            log.WriteToLog("logicalNumber=" + logicalNumber.ToString());
-            log.WriteToLog("shiftState=" + shiftState.ToString());
-            log.WriteToLog("model=" + model.ToString());
-            log.WriteToLog("mode=" + mode.ToString());
-            log.WriteToLog("submode=" + submode.ToString());
-            log.WriteToLog("receiptNumber=" + receiptNumber.ToString());
-            log.WriteToLog("documentNumber=" + documentNumber.ToString());
-            log.WriteToLog("shiftNumber=" + shiftNumber.ToString());
-            log.WriteToLog("receiptType=" + receiptType.ToString());
-            log.WriteToLog("lineLength=" + lineLength.ToString());
-            log.WriteToLog("lineLengthPix=" + lineLengthPix.ToString());
-
-            log.WriteToLog("receiptSum=" + receiptSum.ToString());
-
-            log.WriteToLog("isFiscalDevice=" + isFiscalDevice.ToString());
-            log.WriteToLog("isFiscalFN=" + isFiscalFN.ToString());
-            log.WriteToLog("isFNPresent=" + isFNPresent.ToString());
-            log.WriteToLog("isInvalidFN=" + isInvalidFN.ToString());
-            log.WriteToLog("isCashDrawerOpened=" + isCashDrawerOpened.ToString());
-            log.WriteToLog("isPaperPresent=" + isPaperPresent.ToString());
-            log.WriteToLog("isPaperNearEnd=" + isPaperNearEnd.ToString());
-            log.WriteToLog("isCoverOpened=" + isCoverOpened.ToString());
-            log.WriteToLog("isPrinterConnectionLost=" + isPrinterConnectionLost.ToString());
-            log.WriteToLog("isPrinterError=" + isPrinterError.ToString());
-            log.WriteToLog("isCutError=" + isCutError.ToString());
-            log.WriteToLog("isPrinterOverheat=" + isPrinterOverheat.ToString());
-            log.WriteToLog("isDeviceBlocked=" + isDeviceBlocked.ToString());
-
-            log.WriteToLog("dateTime=" + dateTime.ToString("yyyy-MM-dd HH:mm:ss.fff"));
-
-            log.WriteToLog("serialNumber=" + serialNumber);
-            log.WriteToLog("modelName=" + modelName);
-            log.WriteToLog("firmwareVersion=" + firmwareVersion);
-            */
+            fptr.Password = this.userPassword;
         }
 
         public void RequestRegInfo()
         {
-            log.WriteToLog("Запрос реквизитов регистрации ККТ:");
+            //log.WriteToLog("Запрос реквизитов регистрации ККТ:");
+
             /*
             fptr.setParam(Constants.LIBFPTR_PARAM_FN_DATA_TYPE, Constants.LIBFPTR_FNDT_REG_INFO);
             fptr.fnQueryData();
@@ -445,20 +407,40 @@ namespace chib.cash.shtrih64
             return result;
         }
 
-        public int Registration()
+        public int Registration(String stringForPrinting, int department, double quantity, decimal price, int tax,
+            int paymentTypeSign, int paymentItemSign)
         {
-            int result = fptr.registration();
-            log.WriteToLog("fptr.registration() => " + result.ToString());
+            fptr.StringForPrinting = stringForPrinting;
+            fptr.Department = department;
+            fptr.Quantity = quantity;
+            fptr.Price = price;
+            fptr.Tax1 = tax;
+            if (tax >= 1 && tax <= 6)
+            {
+                fptr.TaxValue1Enabled = true;
+            }
+            else
+            {
+                fptr.TaxValue1Enabled = false;
+            }
+            fptr.PaymentTypeSign = paymentTypeSign;  // Признак способа расчета (Полный расчет). Необходим для ФФД 1.05
+            fptr.PaymentItemSign = paymentItemSign;  // Признак предмета расчета (Услуга). Необходим для ФФД 1.05
+
+            int result = fptr.FNOperation();
+            log.WriteToLog("fptr.FNOperation() => " + result.ToString());
             return result;
         }
 
+        /*
         public int Payment()
         {
             int result = fptr.payment();
             log.WriteToLog("fptr.payment() => " + result.ToString());
             return result;
         }
+        */
 
+        /*
         public uint GetLastDocumentNumber()
         {
             fptr.setParam(Constants.LIBFPTR_PARAM_FN_DATA_TYPE, Constants.LIBFPTR_FNDT_LAST_RECEIPT);
@@ -466,6 +448,7 @@ namespace chib.cash.shtrih64
             uint documentNumber = fptr.getParamInt(Constants.LIBFPTR_PARAM_DOCUMENT_NUMBER);
             return documentNumber;
         }
+        */
 
         public int XReport()
         {
@@ -502,12 +485,45 @@ namespace chib.cash.shtrih64
             return result;
         }
 
-        public int CloseCheque()
+        public int CloseCheque(double sum, int typeOpl)
         {
-            int result = fptr.CloseCheck();
-            log.WriteToLog("fptr.CloseCheck() => " + result.ToString());
+            SetSummaPayType((decimal)sum, typeOpl);
+
+            fptr.DiscountOnCheck = 0;
+            //Налог был определен ранее при регистрации продажи или возврата
+            //fptr.Tax1 = tax;
+            fptr.StringForPrinting = "";
+
+            //WaitCash(shtrih_);
+            int result = fptr.FNCloseCheckEx();
+
+            log.WriteToLog("fptr.FNCloseCheckEx() => " + result.ToString());
             CheckDocumentClosed();
             return result;
+        }
+
+        private void SetSummaPayType(decimal sum, int typeOpl)
+        {
+            fptr.Summ1 = 0;
+            fptr.Summ2 = 0;
+            fptr.Summ3 = 0;
+            fptr.Summ4 = 0;
+
+            switch (typeOpl)
+            {
+                case 1: // наличные
+                    fptr.Summ1 = sum;
+                    break;
+                case 2:
+                    fptr.Summ2 = sum;
+                    break;
+                case 3:
+                    fptr.Summ3 = sum;
+                    break;
+                case 4:
+                    fptr.Summ4 = sum;
+                    break;
+            }
         }
 
         public int BeginNonFiscalDoc()
@@ -544,44 +560,37 @@ namespace chib.cash.shtrih64
             return result;
         }
 
-        public void SetParam(int paramId, uint value)
+        public int FNSendTagOperationInt(int tagNumber, int tagType, int tagValueInt)
         {
-            fptr.setParam(paramId, value);
-            log.WriteToLog("fptr.setParam(): paramId=" + paramId.ToString() + " value=" + value.ToString());
+            fptr.TagNumber = tagNumber;
+            fptr.TagType = tagType;
+            log.WriteToLog("Tag " + tagNumber.ToString() + " = " + tagValueInt.ToString());
+            fptr.TagValueInt = tagValueInt;
+            int result = fptr.FNSendTagOperation();
+            return result;
         }
 
-        public void SetParam(int paramId, String value)
+        public int FNBeginSTLVTag(int tagNumber)
         {
-            fptr.setParam(paramId, value);
-            log.WriteToLog("fptr.setParam(): paramId=" + paramId.ToString() + " value=" + value);
+            fptr.TagNumber = tagNumber;
+            int result = fptr.FNBeginSTLVTag();
+            return result;
         }
 
-        public void SetParam(int paramId, bool value)
+        public int FNAddTag(int tagNumber, int tagType, String tagValue)
         {
-            fptr.setParam(paramId, value);
-            log.WriteToLog("fptr.setParam(): paramId=" + paramId.ToString() + " value=" + value.ToString());
+            fptr.TagNumber = tagNumber;
+            fptr.TagType = tagType;
+            log.WriteToLog("Tag " + tagNumber.ToString() + " = " + tagValue);
+            fptr.TagValueStr = tagValue;
+            int result = fptr.FNSendTagOperation();
+            return result;
         }
 
-        public void SetParam(int paramId, double value)
+        public int FNSendSTLVTagOperation()
         {
-            fptr.setParam(paramId, value);
-            log.WriteToLog("fptr.setParam(): paramId=" + paramId.ToString() + " value=" + value.ToString());
-        }
-
-        public void SetParam(int paramId, byte[] value)
-        {
-            fptr.setParam(paramId, value);
-            log.WriteToLog("fptr.setParam(): paramId=" + paramId.ToString() + " value=" + value.ToString());
-        }
-
-        public int UtilFormTlv()
-        {
-            return fptr.utilFormTlv();
-        }
-
-        public byte[] GetParamByteArray(int value)
-        {
-            return fptr.getParamByteArray(value);
+            int result = fptr.FNSendSTLVTagOperation();
+            return result;
         }
 
         /*
@@ -648,7 +657,7 @@ namespace chib.cash.shtrih64
             return fptr.ValueOfFieldInteger;
         }
 
-    public void SetNoPrintCheque(bool isECheque)
+        public int SetNoPrintCheque(bool isECheque)
         {
             // Параметр, который отключает печать чека на ленте - это поле 7 в таблице 17: 
             // 0 - документ печатается 
@@ -658,7 +667,7 @@ namespace chib.cash.shtrih64
             int attr = isECheque ? 1 : 0;
             if (this.GetNoPrintCheck() == attr)
             {
-                return;
+                return 0;
             }
 
             log.WriteToLog(isECheque ? "Отключить печать на кассовой ленте" : "Включить печать на кассовой ленте");
@@ -668,9 +677,18 @@ namespace chib.cash.shtrih64
             fptr.RowNumber = 1;
             fptr.ValueOfFieldInteger = attr;
             fptr.GetFieldStruct();
-            int result = fptr.WriteTable();  
+            int result = fptr.WriteTable();
             log.WriteToLog("WriteTable[17, 7, 1] = " + result.ToString());
             fptr.Password = this.userPassword;
+            return result;
+        }
+
+        public int Cut(bool cutType)
+        {
+            fptr.CutType = cutType;
+            int result = fptr.CutCheck();
+            log.WriteToLog("fptr.CutCheck(): [fptr.CutType=" + cutType.ToString() + "] => " + result.ToString());
+            return result;
         }
     }
 }
