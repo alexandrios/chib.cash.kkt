@@ -105,9 +105,9 @@ namespace Test
                     [Attributes.OPERATOR_ADDRESS] = "",
                     [Attributes.OPERATOR_INN] = "",
                     [Attributes.OPERATOR_PHONE] = "8-351-774359",
-                    [Attributes.PU_PHONE] = "83512234567",
-                    [Attributes.PU_NAME] = "АО Энерго",
-                    [Attributes.PU_INN] = "7450567890"
+                    [Attributes.PU_PHONE] = "", // "83512234567",
+                    [Attributes.PU_NAME] = "", //"АО Энерго",
+                    [Attributes.PU_INN] = "" //"7450567890"
                 };
 
                 //Type wrapperType = assembly.GetType("chib.cash.wrp64.Wrapper", true, true);
