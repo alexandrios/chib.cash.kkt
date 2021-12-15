@@ -498,7 +498,8 @@ namespace chib.cash.atol64
         public void SetParam(int paramId, byte[] value)
         {
             fptr.setParam(paramId, value);
-            log.WriteToLog("fptr.setParam(): paramId=" + paramId.ToString() + " value=" + value.ToString());
+            
+            log.WriteToLog("fptr.setParam(): paramId=" + paramId.ToString() + " value=" + value.Length.ToString());
         }
 
         public int UtilFormTlv()
