@@ -2,10 +2,14 @@
 using System.Reflection;
 using System.IO;
 
+using shared;
+
 namespace chib.cash.wrp64
 {
     public class CashObject
     {
+        Log log = new Log(@"c:\gorod\chelyabinvestbank");
+
         readonly String driverName;
         readonly String driverPath;
         readonly Object cash;
@@ -16,6 +20,9 @@ namespace chib.cash.wrp64
             this.driverName = Path.GetFileNameWithoutExtension(driverNameExt);
             this.driverPath = Directory.GetCurrentDirectory() + @"\" + driverNameExt;
 
+            log.WriteToLog(this.driverName);
+            log.WriteToLog(this.driverPath);
+
             // Получить объект Cash драйвера driverName
             Assembly assembly = Assembly.LoadFile(this.driverPath);
             this.cashType = assembly.GetType(this.driverName + ".Cash", true, true);
@@ -23,7 +30,15 @@ namespace chib.cash.wrp64
             //this.cash = Activator.CreateInstance(this.cashType);
 
             MethodInfo executeMethod = this.cashType.GetMethod("Instance");
-            this.cash = executeMethod.Invoke(null, null);
+            log.WriteToLog(executeMethod.Name);
+            try
+            {
+                this.cash = executeMethod.Invoke(null, null);
+            }
+            catch (Exception ex)
+            {
+                log.WriteToLog(Log.Level.Error, ex.Message);
+            }
         }
 
         public long ExecuteMethod(String methodName, object args)
