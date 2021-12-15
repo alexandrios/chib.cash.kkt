@@ -80,121 +80,138 @@ namespace shared
             {
                 log.WriteToLog("Получен параметр: " + pair.Key + "=" + pair.Value);
 
-                switch (pair.Key)
+                try
                 {
-                    case Attributes.BANK_COMISS:
-                        {
-                            BankComiss = int.Parse(pair.Value);
-                            isReceived[Attributes.BANK_COMISS] = true;
-                            break;
-                        }
-                    case Attributes.IS_PRECHEQUE:
-                        {
-                            IsPreCheque = pair.Value == "1";
-                            isReceived[Attributes.IS_PRECHEQUE] = true;
-                            break;
-                        }
-                    case Attributes.IS_CASHLESSCHEQUE:
-                        {
-                            IsCashlessCheque = pair.Value == "1";
-                            isReceived[Attributes.IS_CASHLESSCHEQUE] = true;
-                            break;
-                        }
-                    case Attributes.IS_ECHEQUE:
-                        {
-                            IsECheque = pair.Value == "1";
-                            isReceived[Attributes.IS_ECHEQUE] = true;
-                            break;
-                        }
-                    case Attributes.CLIENT_PHONE:
-                        {
-                            ClientPhone = pair.Value;
-                            isReceived[Attributes.CLIENT_PHONE] = true;
-                            break;
-                        }
-                    case Attributes.CLIENT_EMAIL:
-                        {
-                            ClientEmail = pair.Value;
-                            isReceived[Attributes.CLIENT_EMAIL] = true;
-                            break;
-                        }
-                    case Attributes.SERVICE_NAME:
-                        {
-                            ServiceName = pair.Value;
-                            isReceived[Attributes.SERVICE_NAME] = true;
-                            break;
-                        }
-                    case Attributes.CASHIER_NAME:
-                        {
-                            CashierName = pair.Value;
-                            isReceived[Attributes.CASHIER_NAME] = true;
-                            break;
-                        }
-                    case Attributes.CASHIER_INN:
-                        {
-                            CashierInn = pair.Value;
-                            isReceived[Attributes.CASHIER_INN] = true;
-                            break;
-                        }
-                    case Attributes.AGENT_PHONE:
-                        {
-                            AgentPhone = pair.Value;
-                            isReceived[Attributes.AGENT_PHONE] = true;
-                            break;
-                        }
-                    case Attributes.OPERATOR_OPER:
-                        {
-                            OperatorOper = pair.Value;
-                            isReceived[Attributes.OPERATOR_OPER] = true;
-                            break;
-                        }
-                    case Attributes.OPERATOR_NAME:
-                        {
-                            OperatorName = pair.Value;
-                            isReceived[Attributes.OPERATOR_NAME] = true;
-                            break;
-                        }
-                    case Attributes.OPERATOR_ADDRESS:
-                        {
-                            OperatorAddress = pair.Value;
-                            isReceived[Attributes.OPERATOR_ADDRESS] = true;
-                            break;
-                        }
-                    case Attributes.OPERATOR_INN:
-                        {
-                            OperatorInn = pair.Value;
-                            isReceived[Attributes.OPERATOR_INN] = true;
-                            break;
-                        }
-                    case Attributes.OPERATOR_PHONE:
-                        {
-                            OperatorPhone = pair.Value;
-                            isReceived[Attributes.OPERATOR_PHONE] = true;
-                            break;
-                        }
-                    case Attributes.PU_PHONE:
-                        {
-                            PuPhone = pair.Value;
-                            isReceived[Attributes.PU_PHONE] = true;
-                            break;
-                        }
-                    case Attributes.PU_NAME:
-                        {
-                            PuName = pair.Value;
-                            isReceived[Attributes.PU_NAME] = true;
-                            break;
-                        }
-                    case Attributes.PU_INN:
-                        {
-                            PuInn = pair.Value;
-                            isReceived[Attributes.PU_INN] = true;
-                            break;
-                        }
-                    default:
-                        {
-                            log.WriteToLog("Параметр не используется: " + pair.Key + "=" + pair.Value);
-                            break;
-                        }
+                    String tmp = pair.Value;
+                    if (!String.IsNullOrEmpty(tmp))
+                    {
+                        if (tmp.Contains(Convert.ToChar(160).ToString()))
+                            tmp = tmp.Replace(Convert.ToChar(160).ToString(), " ");
+                        if (tmp.Contains(Convert.ToChar(9).ToString()))
+                            tmp = tmp.Replace(Convert.ToChar(9).ToString(), " ");
+                    }
+
+                    switch (pair.Key)
+                    {
+                        case Attributes.BANK_COMISS:
+                            {
+                                BankComiss = int.Parse(tmp);
+                                isReceived[Attributes.BANK_COMISS] = true;
+                                break;
+                            }
+                        case Attributes.IS_PRECHEQUE:
+                            {
+                                IsPreCheque = tmp == "1";
+                                isReceived[Attributes.IS_PRECHEQUE] = true;
+                                break;
+                            }
+                        case Attributes.IS_CASHLESSCHEQUE:
+                            {
+                                IsCashlessCheque = tmp == "1";
+                                isReceived[Attributes.IS_CASHLESSCHEQUE] = true;
+                                break;
+                            }
+                        case Attributes.IS_ECHEQUE:
+                            {
+                                IsECheque = tmp == "1";
+                                isReceived[Attributes.IS_ECHEQUE] = true;
+                                break;
+                            }
+                        case Attributes.CLIENT_PHONE:
+                            {
+                                ClientPhone = tmp;
+                                isReceived[Attributes.CLIENT_PHONE] = true;
+                                break;
+                            }
+                        case Attributes.CLIENT_EMAIL:
+                            {
+                                ClientEmail = tmp;
+                                isReceived[Attributes.CLIENT_EMAIL] = true;
+                                break;
+                            }
+                        case Attributes.SERVICE_NAME:
+                            {
+                                ServiceName = tmp;
+                                isReceived[Attributes.SERVICE_NAME] = true;
+                                break;
+                            }
+                        case Attributes.CASHIER_NAME:
+                            {
+                                CashierName = tmp;
+                                isReceived[Attributes.CASHIER_NAME] = true;
+                                break;
+                            }
+                        case Attributes.CASHIER_INN:
+                            {
+                                CashierInn = tmp;
+                                isReceived[Attributes.CASHIER_INN] = true;
+                                break;
+                            }
+                        case Attributes.AGENT_PHONE:
+                            {
+                                AgentPhone = tmp;
+                                isReceived[Attributes.AGENT_PHONE] = true;
+                                break;
+                            }
+                        case Attributes.OPERATOR_OPER:
+                            {
+                                OperatorOper = tmp;
+                                isReceived[Attributes.OPERATOR_OPER] = true;
+                                break;
+                            }
+                        case Attributes.OPERATOR_NAME:
+                            {
+                                OperatorName = tmp;
+                                isReceived[Attributes.OPERATOR_NAME] = true;
+                                break;
+                            }
+                        case Attributes.OPERATOR_ADDRESS:
+                            {
+                                OperatorAddress = tmp;
+                                isReceived[Attributes.OPERATOR_ADDRESS] = true;
+                                break;
+                            }
+                        case Attributes.OPERATOR_INN:
+                            {
+                                OperatorInn = tmp;
+                                isReceived[Attributes.OPERATOR_INN] = true;
+                                break;
+                            }
+                        case Attributes.OPERATOR_PHONE:
+                            {
+                                OperatorPhone = tmp;
+                                isReceived[Attributes.OPERATOR_PHONE] = true;
+                                break;
+                            }
+                        case Attributes.PU_PHONE:
+                            {
+                                PuPhone = tmp;
+                                isReceived[Attributes.PU_PHONE] = true;
+                                break;
+                            }
+                        case Attributes.PU_NAME:
+                            {
+                                PuName = tmp;
+                                isReceived[Attributes.PU_NAME] = true;
+                                break;
+                            }
+                        case Attributes.PU_INN:
+                            {
+                                PuInn = tmp;
+                                isReceived[Attributes.PU_INN] = true;
+                                break;
+                            }
+                        default:
+                            {
+                                log.WriteToLog("Параметр не используется: " + pair.Key + "=" + pair.Value);
+                                break;
+                            }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    log.WriteToLog(Log.Level.Error, ex.Message);
+                    throw ex;
                 }
             }
 
