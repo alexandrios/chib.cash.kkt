@@ -68,4 +68,7 @@
   </ItemGroup>
   <Import Project="..\shared\shared.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>copy $(ProjectDir)$(OutDir)$(TargetName)$(TargetExt) C:\Projects\dotnet\Chib.R4RManager\trunk\Libs\Executables\$(TargetName)$(TargetExt)</PostBuildEvent>
+  </PropertyGroup>
 </Project>
